@@ -1,4 +1,4 @@
-name: Deploy Lambda Function
+name: Deploy Lambda via S3
 
 on:
   push:
@@ -18,24 +18,27 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install dependencies
+    - name: Install dependencies and build zip
       run: |
-        python -m venv venv
-        source venv/bin/activate
-        pip install -r requirements.txt
         pip install --target lambda-package -r requirements.txt
         cp etl/lambda_function.py lambda-package/
-
-    - name: Zip Lambda package
-      run: |
         cd lambda-package
         zip -r ../lambda-deploy.zip .
 
-    - name: Deploy to AWS Lambda
-      uses: appleboy/lambda-action@master
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws_region: 'us-east-2'
-        function_name: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-        zip_file: lambda-deploy.zip
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Upload deployment package to S3
+      run: |
+        aws s3 cp lambda-deploy.zip s3://nba-analyzer-data-madeline/lambda/lambda-deploy.zip
+
+    - name: Update Lambda function from S3
+      run: |
+        aws lambda update-function-code \
+          --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+          --s3-bucket nba-analyzer-data-madeline \
+          --s3-key lambda/lambda-deploy.zip
