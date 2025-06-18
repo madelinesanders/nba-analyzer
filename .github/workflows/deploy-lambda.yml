@@ -20,10 +20,10 @@ jobs:
 
     - name: Install dependencies and build zip
       run: |
-        rm -rf lambda-package
+        rm -rf lambda-package lambda-deploy.zip
         mkdir lambda-package
-        pip install --upgrade pip
-        pip install --target lambda-package -r requirements.txt
+        python -m pip install --upgrade pip
+        python -m pip install --no-cache-dir --target lambda-package -r requirements.txt
         cp etl/lambda_function.py lambda-package/
         cd lambda-package
         zip -r ../lambda-deploy.zip .
