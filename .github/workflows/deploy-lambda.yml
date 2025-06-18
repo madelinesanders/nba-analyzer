@@ -18,7 +18,7 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install dependencies and build zip
+    - name: Clean and build Lambda package
       run: |
         rm -rf lambda-package lambda-deploy.zip
         mkdir lambda-package
