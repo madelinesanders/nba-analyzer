@@ -13,12 +13,12 @@ def lambda_handler(event, context):
 
     # Collect career stats
     dfs = []
-    for player_id in player_ids:
+    for player_id in player_ids[:10]:
         try:
             career = playercareerstats.PlayerCareerStats(player_id=player_id)
             career_df = career.get_data_frames()[0]
             dfs.append(career_df)
-            time.sleep(0.5)  # to avoid rate limiting, play around with time
+            time.sleep(0.1)  # to avoid rate limiting, play around with time
         except Exception as e:
             print(f"Error with player {player_id}: {e}")
 
