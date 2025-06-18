@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'etl/lambda_function.py'
-      - 'requirements.txt'
 
 jobs:
   deploy:
