@@ -2,6 +2,8 @@ name: Deploy Lambda Function
 
 on:
   push:
+    branches:
+      - dev
     paths:
       - 'etl/lambda_function.py'
       - 'requirements.txt'
