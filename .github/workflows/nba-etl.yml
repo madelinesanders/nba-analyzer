@@ -1,4 +1,4 @@
-name: Weekly NBA Data ETL
+name: NBA Weekly Data Job
 
 on:
   schedule:
