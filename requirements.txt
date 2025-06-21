@@ -1,1 +1,4 @@
-nba_api==1.1.11
+nba_api
+boto3
+pandas
+duckdb
