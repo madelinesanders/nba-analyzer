@@ -11,14 +11,18 @@ def main():
     player_ids = [row["id"] for _, row in all_players.iterrows() if row["is_active"]]
 
     dfs = []
-    for player_id in player_ids[:10]:  # Only 10 for testing
+    for player_id in player_ids[:5]:
+        print(f"Trying player {player_id}...")
         try:
             career = playercareerstats.PlayerCareerStats(player_id=player_id)
+            print(f"Retrieved data for player {player_id}")
             career_df = career.get_data_frames()[0]
             dfs.append(career_df)
+            print(f"Appended stats for player {player_id}")
             time.sleep(0.1)
         except Exception as e:
             print(f"Error with player {player_id}: {e}")
+
 
     if not dfs:
         print("No data collected.")
