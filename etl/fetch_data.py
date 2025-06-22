@@ -11,7 +11,7 @@ def main():
     player_ids = [row["id"] for _, row in all_players.iterrows() if row["is_active"]]
 
     dfs = []
-    for player_id in player_ids[:5]:
+    for player_id in player_ids[:6]:
         print(f"Trying player {player_id}...")
         try:
             career = playercareerstats.PlayerCareerStats(player_id=player_id)
