@@ -2,8 +2,24 @@ import pandas as pd
 import time
 import boto3
 import duckdb
+
 from nba_api.stats.endpoints import playercareerstats
 from nba_api.stats.static import players
+from nba_api.stats.library.http import NBAStatsHTTP  # <- added for header spoofing
+
+# Spoof headers to mimic a browser and avoid being blocked
+NBAStatsHTTP._HEADERS = {
+    "Host": "stats.nba.com",
+    "Connection": "keep-alive",
+    "Accept": "application/json, text/plain, */*",
+    "x-nba-stats-token": "true",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "x-nba-stats-origin": "stats",
+    "Origin": "https://www.nba.com",
+    "Referer": "https://www.nba.com/",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 def main():
     # Get all active NBA players
@@ -12,7 +28,7 @@ def main():
 
     # For testing, just pull a few players
     dfs = []
-    for player_id in player_ids[:2]:  # <-- adjust this number once it's stable
+    for player_id in player_ids[:2]:  # scale this up once it works
         print(f"Trying player {player_id}...", flush=True)
         try:
             career = playercareerstats.PlayerCareerStats(player_id=player_id)
@@ -20,7 +36,7 @@ def main():
             career_df = career.get_data_frames()[0]
             dfs.append(career_df)
             print(f"Appended stats for player {player_id}", flush=True)
-            time.sleep(0.1)  # polite rate-limiting
+            time.sleep(0.1)
         except Exception as e:
             print(f"Error with player {player_id}: {e}", flush=True)
 
