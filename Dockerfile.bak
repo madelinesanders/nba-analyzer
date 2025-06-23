@@ -1,0 +1,15 @@
+# Start from the AWS Lambda base image for Python 3.12
+FROM public.ecr.aws/lambda/python:3.12
+
+# Set working directory
+WORKDIR /var/task
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy your ETL code
+COPY etl/ etl/
+
+# Set the entry point for Lambda (pointing to a function in fetch_data.py)
+CMD ["etl.fetch_data.lambda_handler"]

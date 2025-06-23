@@ -63,5 +63,9 @@ def main():
     except Exception as e:
         print(f"Upload failed: {e}", flush=True)
 
-if __name__ == "__main__":
+def lambda_handler(event=None, context=None):
     main()
+    return {
+        "statusCode": 200,
+        "body": "ETL process completed successfully."
+    }
