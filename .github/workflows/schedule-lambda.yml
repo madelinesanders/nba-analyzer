@@ -1,0 +1,31 @@
+name: Schedule Lambda Execution
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'  # Every Monday at 8 AM ET
+  workflow_dispatch:
+
+jobs:
+  trigger-lambda:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::950693198730:role/GithubOIDCPushToECR
+          aws-region: us-east-1
+
+      - name: Invoke Lambda function
+        run: |
+          aws lambda invoke \
+            --function-name nba-etl-lambda \
+            --payload '{}' \
+            response.json
+          
+          echo "Lambda execution response:"
+          cat response.json 

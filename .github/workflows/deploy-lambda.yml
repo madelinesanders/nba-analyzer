@@ -1,0 +1,48 @@
+name: Deploy Lambda Function
+
+on:
+  workflow_run:
+    workflows: ["Build and Push to ECR"]
+    types:
+      - completed
+    branches: [dev]
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::950693198730:role/GithubOIDCPushToECR
+          aws-region: us-east-1
+
+      - name: Update Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name nba-etl-lambda \
+            --image-uri 950693198730.dkr.ecr.us-east-1.amazonaws.com/nba-etl-lambda:latest
+
+      - name: Wait for update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name nba-etl-lambda
+
+      - name: Test Lambda function
+        run: |
+          aws lambda invoke \
+            --function-name nba-etl-lambda \
+            --payload '{}' \
+            response.json
+          
+          echo "Lambda execution response:"
+          cat response.json 
