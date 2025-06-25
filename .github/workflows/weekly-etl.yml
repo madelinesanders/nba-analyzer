@@ -1,9 +1,12 @@
 name: Weekly ETL Pipeline
 # Comment for testing
 on:
-  schedule:
+    push:
+        branches:
+        - main  # Trigger on pushes to the main branch
+    schedule:
     - cron: '0 12 * * 0'  # Every Sunday at 12:00 UTC
-  workflow_dispatch:      # Allow manual runs
+    workflow_dispatch:      # Allow manual runs
 
 jobs:
   etl:
