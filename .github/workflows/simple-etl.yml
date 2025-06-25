@@ -1,0 +1,54 @@
+name: NBA Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'  # Every Monday at 8 AM ET
+  workflow_dispatch:
+  push:
+    branches: [dev]
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run ETL and upload to S3
+        run: python etl/fetch_data.py
+
+      - name: Trigger Lambda for data processing
+        run: |
+          aws lambda invoke \
+            --function-name nba-data-processor \
+            --payload '{"source": "github-actions"}' \
+            response.json
+          
+          echo "Lambda execution response:"
+          cat response.json
+
+      - name: Create data quality report
+        run: |
+          echo "## 📊 Data Quality Report" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ ETL completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 Data uploaded to S3" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Lambda processing triggered" >> $GITHUB_STEP_SUMMARY
+          echo "- 🕐 Timestamp: $(date)" >> $GITHUB_STEP_SUMMARY 
