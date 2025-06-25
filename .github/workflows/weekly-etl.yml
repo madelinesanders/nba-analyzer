@@ -1,12 +1,12 @@
-name: Weekly NBA ETL to S3
+name: Weekly ETL Pipeline
 
 on:
   schedule:
-    - cron: '0 12 * * 1'  # Every Monday at 12:00 UTC
-  workflow_dispatch:      # Allow manual trigger
+    - cron: '0 12 * * 0'  # Every Sunday at 12:00 UTC
+  workflow_dispatch:      # Allow manual runs
 
 jobs:
-  run-etl:
+  etl:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: 3.11
 
       - name: Install dependencies
         run: |
@@ -24,8 +24,23 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run ETL script
+        run: python etl/fetch_data.py
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
-        run: python etl/fetch_data.py
+          AWS_REGION: us-east-1
+
+      # To include once my Lambda is ready
+      # - name: Invoke Lambda
+      #   run: |
+      #     aws lambda invoke \
+      #       --function-name nba-data-processor \
+      #       --payload '{"source": "github-actions"}' \
+      #       --cli-binary-format raw-in-base64-out \
+      #       response.json
+      #     echo "Lambda execution response:"
+      #     cat response.json
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_REGION: us-east-1
