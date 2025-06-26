@@ -38,7 +38,7 @@ def main():
                 logging.info(f"✓ Added player {player_id}, {len(career_df)} rows")
                 time.sleep(0.75)  # throttle requests slightly
             except Exception as e:
-                logging.warning(f"⚠️ Failed for player {player_id}: {e}")
+                logging.warning(f"Failed for player {player_id}: {e}")
 
         if not dfs:
             logging.warning("No data collected.")
