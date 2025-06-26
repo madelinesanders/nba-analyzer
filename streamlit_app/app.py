@@ -15,7 +15,7 @@ def load_data():
         pass  # Already installed
     con.execute("LOAD httpfs;")
     # Set AWS credentials
-    con.execute("SET s3_region='us-east-1';")
+    con.execute("SET s3_region='us-east-2';")
     con.execute(f"SET s3_access_key_id='{os.environ.get('AWS_ACCESS_KEY_ID', '')}';")
     con.execute(f"SET s3_secret_access_key='{os.environ.get('AWS_SECRET_ACCESS_KEY', '')}';")
     # Query data directly from S3
