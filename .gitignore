@@ -192,3 +192,12 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Additionals
+.csv
+.parquet
+.aws/
+*.csv
+*.parquet
+*.duckdb
+etl/etl.log
