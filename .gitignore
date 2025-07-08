@@ -201,3 +201,16 @@ cython_debug/
 *.parquet
 *.duckdb
 etl/etl.log
+
+
+# Airflow
+airflow/
+airflow.cfg
+airflow.db
+airflow-webserver.pid
+airflow-scheduler.pid
+airflow-*.pid
+*.pid
+simple_auth_manager_passwords.json*
+standalone_admin_password.txt
+webserver_config.py

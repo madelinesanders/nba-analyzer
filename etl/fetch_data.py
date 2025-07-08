@@ -28,7 +28,7 @@ def main():
         dfs = []
         logging.info(f"Fetching data for {len(player_ids[:100])} players...")
 
-        for player_id in player_ids[:100]:  # Adjust slice to scale up
+        for player_id in player_ids:
             try:
                 career = playercareerstats.PlayerCareerStats(player_id=player_id)
                 career_df = career.get_data_frames()[0]
