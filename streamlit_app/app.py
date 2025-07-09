@@ -46,72 +46,63 @@ try:
         st.line_chart(player_df.set_index("SEASON_ID")[["PTS", "AST", "REB"]])
     
     with tab2:
-        # Get all teams from latest available season per player
+        # Get the most recent season_id
+        most_recent_season = con.execute(f"""
+            SELECT MAX(SEASON_ID) FROM read_parquet('{PARQUET_URL}')
+        """).fetchone()[0]
+
+        # Load team abbreviations for the most recent season only
         team_names = con.execute(f"""
-            WITH latest_season AS (
-                SELECT PLAYER_NAME, MAX(SEASON_ID) AS max_season
-                FROM read_parquet('{PARQUET_URL}')
-                GROUP BY PLAYER_NAME
-            ),
-            latest_team_data AS (
-                SELECT r.PLAYER_NAME, r.SEASON_ID, r.TEAM_ABBREVIATION
-                FROM read_parquet('{PARQUET_URL}') r
-                JOIN latest_season l
-                ON r.PLAYER_NAME = l.PLAYER_NAME AND r.SEASON_ID = l.max_season
-            )
             SELECT DISTINCT TEAM_ABBREVIATION
-            FROM latest_team_data
+            FROM read_parquet('{PARQUET_URL}')
+            WHERE SEASON_ID = '{most_recent_season}'
             ORDER BY TEAM_ABBREVIATION
         """).fetchall()
         team_names = [row[0] for row in team_names]
 
         selected_team = st.selectbox("Select a Team", team_names)
 
-        # Subset: Only use each player's most recent season
-        st.subheader("Leading Scorer per Season")
-        top_scorers_df = con.execute(f"""
-            WITH latest_season AS (
-                SELECT PLAYER_NAME, MAX(SEASON_ID) AS max_season
-                FROM read_parquet('{PARQUET_URL}')
-                GROUP BY PLAYER_NAME
-            ),
-            latest_team_data AS (
-                SELECT r.*
-                FROM read_parquet('{PARQUET_URL}') r
-                JOIN latest_season l
-                ON r.PLAYER_NAME = l.PLAYER_NAME AND r.SEASON_ID = l.max_season
-            ),
-            team_data AS (
-                SELECT *
-                FROM latest_team_data
-                WHERE TEAM_ABBREVIATION = '{selected_team}'
-            )
-            SELECT SEASON_ID, PLAYER_NAME, PTS
-            FROM team_data
-            ORDER BY PTS DESC
-        """).df()
-        st.dataframe(top_scorers_df)
-
-        st.subheader("Team Totals (Most Recent Season per Player)")
+        st.subheader(f"🏀 Team Totals for {selected_team} - {most_recent_season}")
         team_totals_df = con.execute(f"""
-            WITH latest_season AS (
-                SELECT PLAYER_NAME, MAX(SEASON_ID) AS max_season
-                FROM read_parquet('{PARQUET_URL}')
-                GROUP BY PLAYER_NAME
-            ),
-            latest_team_data AS (
-                SELECT r.*
-                FROM read_parquet('{PARQUET_URL}') r
-                JOIN latest_season l
-                ON r.PLAYER_NAME = l.PLAYER_NAME AND r.SEASON_ID = l.max_season
-            )
-            SELECT SEASON_ID, SUM(PTS) AS Total_PTS, SUM(AST) AS Total_AST, SUM(REB) AS Total_REB
-            FROM latest_team_data
-            WHERE TEAM_ABBREVIATION = '{selected_team}'
-            GROUP BY SEASON_ID
-            ORDER BY SEASON_ID
+            SELECT 
+                SUM(PTS) AS Total_PTS, 
+                SUM(AST) AS Total_AST, 
+                SUM(REB) AS Total_REB
+            FROM read_parquet('{PARQUET_URL}')
+            WHERE TEAM_ABBREVIATION = '{selected_team}' AND SEASON_ID = '{most_recent_season}'
         """).df()
-        st.bar_chart(team_totals_df.set_index("SEASON_ID"))
+        st.dataframe(team_totals_df)
+
+        st.subheader(f"⭐ Stat Leaders for {selected_team} - {most_recent_season}")
+        stat_leaders_df = con.execute(f"""
+            WITH team_season_data AS (
+                SELECT *
+                FROM read_parquet('{PARQUET_URL}')
+                WHERE TEAM_ABBREVIATION = '{selected_team}' AND SEASON_ID = '{most_recent_season}'
+            ),
+            pts_leader AS (
+                SELECT PLAYER_NAME, PTS FROM team_season_data
+                ORDER BY PTS DESC LIMIT 1
+            ),
+            ast_leader AS (
+                SELECT PLAYER_NAME, AST FROM team_season_data
+                ORDER BY AST DESC LIMIT 1
+            ),
+            reb_leader AS (
+                SELECT PLAYER_NAME, REB FROM team_season_data
+                ORDER BY REB DESC LIMIT 1
+            )
+            SELECT 
+                (SELECT PLAYER_NAME FROM pts_leader) AS Top_Scorer,
+                (SELECT PTS FROM pts_leader) AS Points,
+                (SELECT PLAYER_NAME FROM ast_leader) AS Top_Assist,
+                (SELECT AST FROM ast_leader) AS Assists,
+                (SELECT PLAYER_NAME FROM reb_leader) AS Top_Rebounder,
+                (SELECT REB FROM reb_leader) AS Rebounds
+        """).df()
+
+        st.dataframe(stat_leaders_df)
+
 
             
 
