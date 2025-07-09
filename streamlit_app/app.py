@@ -46,7 +46,12 @@ try:
         st.line_chart(player_df.set_index("SEASON_ID")[["PTS", "AST", "REB"]])
 
     with tab2:
-        team = st.selectbox("Select Team", sorted(df["TEAM_ABBREVIATION"].dropna().unique()))
+        team_names = con.execute(f"""
+            SELECT DISTINCT TEAM_ABBREVIATION
+            FROM read_parquet('{PARQUET_URL}')
+        """).fetchall()
+
+        selected_team = ("Select a Team", team_names)
 
         st.subheader("Leading Scorer per Season")
         top_scorers_df = con.execute(f"""
