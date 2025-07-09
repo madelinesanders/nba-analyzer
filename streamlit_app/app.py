@@ -20,32 +20,57 @@ st.caption("Powered by DuckDB SQL + Streamlit")
 try:
     con = load_duckdb_connection()
 
-    tab1, tab2 = st.tabs(["Tab 1", "Tab2"])
-    tab1.write("this is tab 1")
-    tab2.write("this is tab 2")
+    tab1, tab2 = st.tabs(["🏀 Player View", "🏟️ Team View"])
+    with tab1:
+        # Load unique player names for dropdown
+        player_names = con.execute(f"""
+            SELECT DISTINCT PLAYER_NAME
+            FROM read_parquet('{PARQUET_URL}')
+            ORDER BY PLAYER_NAME
+        """).fetchall()
+        player_names = [row[0] for row in player_names]
 
-    # Load unique player names for dropdown
-    player_names = con.execute(f"""
-        SELECT DISTINCT PLAYER_NAME
-        FROM read_parquet('{PARQUET_URL}')
-        ORDER BY PLAYER_NAME
-    """).fetchall()
-    player_names = [row[0] for row in player_names]
+        selected_player = st.selectbox("Select a Player", player_names)
 
-    selected_player = st.selectbox("Select a Player", player_names)
+        # Query player stats
+        player_df = con.execute(f"""
+            SELECT SEASON_ID, TEAM_ID, PTS, AST, REB, GP, PLAYER_NAME
+            FROM read_parquet('{PARQUET_URL}')
+            WHERE PLAYER_NAME = '{selected_player}'
+            ORDER BY SEASON_ID
+        """).df()
 
-    # Query player stats
-    player_df = con.execute(f"""
-        SELECT SEASON_ID, TEAM_ID, PTS, AST, REB, GP, PLAYER_NAME
-        FROM read_parquet('{PARQUET_URL}')
-        WHERE PLAYER_NAME = '{selected_player}'
-        ORDER BY SEASON_ID
-    """).df()
+        st.subheader(f"{selected_player}'s Season Stats")
+        st.dataframe(player_df)
 
-    st.subheader(f"{selected_player}'s Season Stats")
-    st.dataframe(player_df)
+        st.line_chart(player_df.set_index("SEASON_ID")[["PTS", "AST", "REB"]])
 
-    st.line_chart(player_df.set_index("SEASON_ID")[["PTS", "AST", "REB"]])
+    with tab2:
+        team = st.selectbox("Select Team", sorted(df["TEAM_ABBREVIATION"].dropna().unique()))
+
+        st.subheader("Leading Scorer per Season")
+        top_scorers_df = con.execute(f"""
+            SELECT SEASON_ID, PLAYER_NAME, MAX(PTS) as Max_PTS
+            FROM stats
+            WHERE TEAM_ABBREVIATION = '{team}'
+            GROUP BY SEASON_ID, PLAYER_NAME
+            ORDER BY SEASON_ID
+        """).df()
+
+        st.dataframe(top_scorers_df)
+
+        st.subheader("Team Totals per Season")
+        team_totals_df = con.execute(f"""
+            SELECT SEASON_ID, SUM(PTS) as Total_PTS, SUM(AST) as Total_AST, SUM(REB) as Total_REB
+            FROM stats
+            WHERE TEAM_ABBREVIATION = '{team}'
+            GROUP BY SEASON_ID
+            ORDER BY SEASON_ID
+        """).df()
+
+        st.bar_chart(team_totals_df.set_index("SEASON_ID"))
+
+            
 
 except Exception as e:
     st.error(f"Failed to load data: {e}")
