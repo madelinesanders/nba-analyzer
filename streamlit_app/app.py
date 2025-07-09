@@ -20,6 +20,10 @@ st.caption("Powered by DuckDB SQL + Streamlit")
 try:
     con = load_duckdb_connection()
 
+    tab1, tab2 = st.tabs(["Tab 1", "Tab2"])
+    tab1.write("this is tab 1")
+    tab2.write("this is tab 2")
+
     # Load unique player names for dropdown
     player_names = con.execute(f"""
         SELECT DISTINCT PLAYER_NAME
