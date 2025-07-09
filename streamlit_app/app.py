@@ -51,16 +51,17 @@ try:
             FROM read_parquet('{PARQUET_URL}')
         """).fetchall()
 
+        team_names = [row[0] for row in team_names]
         selected_team = ("Select a Team", team_names)
 
         st.subheader("Leading Scorer per Season")
         top_scorers_df = con.execute(f"""
             SELECT SEASON_ID, PLAYER_NAME, MAX(PTS) as Max_PTS
             FROM read_parquet('{PARQUET_URL}')
-            WHERE TEAM_ABBREVIATION = '{selected_team}'
+            WHERE TEAM_ABBREVIATION = ?
             GROUP BY SEASON_ID, PLAYER_NAME
             ORDER BY SEASON_ID
-        """).df()
+        """, [selected_team]).df()
 
         st.dataframe(top_scorers_df)
 
@@ -68,10 +69,10 @@ try:
         team_totals_df = con.execute(f"""
             SELECT SEASON_ID, SUM(PTS) as Total_PTS, SUM(AST) as Total_AST, SUM(REB) as Total_REB
             FROM read_parquet('{PARQUET_URL}')
-            WHERE TEAM_ABBREVIATION = '{selected_team}'
+            WHERE TEAM_ABBREVIATION = ?
             GROUP BY SEASON_ID
             ORDER BY SEASON_ID
-        """).df()
+        """, [selected_team]).df()
 
         st.bar_chart(team_totals_df.set_index("SEASON_ID"))
 
