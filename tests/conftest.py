@@ -1,6 +1,7 @@
+# conftest.py
 import pytest
+import pandas as pd
 
 @pytest.fixture(scope="session")
 def stats_df():
-    from etl.fetch_data import get_latest_stats_df
-    return get_latest_stats_df()
+    return pd.read_parquet("stats_df_latest.parquet")

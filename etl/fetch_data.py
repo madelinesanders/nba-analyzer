@@ -52,28 +52,32 @@ def main():
         stats_df = get_latest_stats_df()
         logging.info(f"Collected {len(stats_df)} total records.")
 
-        # Step 2: Run validation tests
-        logging.info("Running data validation tests...")
-        result = pytest.main(["tests/test_data_validation.py", "-q"])
-        if result != 0:
-            raise Exception("Data validation tests failed, aborting ETL.")
-        logging.info("Data validation passed.")
-
-        # Step 3: Save to local files
+        # Step 2: Save locally
         timestamp = datetime.now().strftime('%Y%m%d')
         duckdb_path = f"stats_df_{timestamp}.duckdb"
         parquet_path = f"stats_df_{timestamp}.parquet"
         csv_path = f"stats_df_{timestamp}.csv"
+        latest_parquet_path = "stats_df_latest.parquet"  # New, Save for pytest
 
+        # Save to DuckDB
         con = duckdb.connect(duckdb_path)
         con.execute("DROP TABLE IF EXISTS stats")
         con.execute("CREATE TABLE stats AS SELECT * FROM stats_df")
         con.close()
         logging.info("Saved data to DuckDB.")
 
+        # Save to other formats
         stats_df.to_parquet(parquet_path, index=False)
+        stats_df.to_parquet(latest_parquet_path, index=False)  #New, Save for pytest
         stats_df.to_csv(csv_path, index=False)
         logging.info("Saved data as Parquet and CSV.")
+
+        # Step 3: Run validation tests (after saving)
+        logging.info("Running data validation tests...")
+        result = pytest.main(["tests/test_data_validation.py", "-q", "--tb=short", "-p", "no:warnings"])
+        if result != 0:
+            raise Exception("Data validation tests failed, aborting ETL.")
+        logging.info("Data validation passed.")
 
         # Step 4: Upload to S3
         s3 = boto3.client("s3")
