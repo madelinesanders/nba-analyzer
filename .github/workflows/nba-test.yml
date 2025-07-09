@@ -21,24 +21,24 @@ jobs:
         run: |
           pip install nba_api pandas
 
-      - name: Run test script
+      - name: Create test script
         run: |
-          python -c "
-import time
-from nba_api.stats.endpoints import playercareerstats
-from nba_api.stats.library.http import NBAStatsHTTP
+          echo "from nba_api.stats.endpoints import playercareerstats" > test_script.py
+          echo "from nba_api.stats.library.http import NBAStatsHTTP" >> test_script.py
+          echo "" >> test_script.py
+          echo "NBAStatsHTTP._HEADERS = {" >> test_script.py
+          echo "    'Host': 'stats.nba.com'," >> test_script.py
+          echo "    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'," >> test_script.py
+          echo "    'Accept': 'application/json, text/plain, */*'," >> test_script.py
+          echo "    'Referer': 'https://www.nba.com/'," >> test_script.py
+          echo "    'x-nba-stats-origin': 'stats'," >> test_script.py
+          echo "    'x-nba-stats-token': 'true'," >> test_script.py
+          echo "    'Connection': 'keep-alive'," >> test_script.py
+          echo "}" >> test_script.py
+          echo "" >> test_script.py
+          echo "career = playercareerstats.PlayerCareerStats(player_id=2544)" >> test_script.py
+          echo "df = career.get_data_frames()[0]" >> test_script.py
+          echo "print(df.head())" >> test_script.py
 
-NBAStatsHTTP._HEADERS = {
-    'Host': 'stats.nba.com',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-    'Accept': 'application/json, text/plain, */*',
-    'Referer': 'https://www.nba.com/',
-    'x-nba-stats-origin': 'stats',
-    'x-nba-stats-token': 'true',
-    'Connection': 'keep-alive',
-}
-
-career = playercareerstats.PlayerCareerStats(player_id=2544)  # LeBron James
-df = career.get_data_frames()[0]
-print(df.head())
-"
+      - name: Run test script
+        run: python test_script.py
