@@ -56,7 +56,7 @@ try:
         st.subheader("Leading Scorer per Season")
         top_scorers_df = con.execute(f"""
             SELECT SEASON_ID, PLAYER_NAME, MAX(PTS) as Max_PTS
-            FROM stats
+            FROM read_parquet('{PARQUET_URL}')
             WHERE TEAM_ABBREVIATION = '{selected_team}'
             GROUP BY SEASON_ID, PLAYER_NAME
             ORDER BY SEASON_ID
@@ -67,7 +67,7 @@ try:
         st.subheader("Team Totals per Season")
         team_totals_df = con.execute(f"""
             SELECT SEASON_ID, SUM(PTS) as Total_PTS, SUM(AST) as Total_AST, SUM(REB) as Total_REB
-            FROM stats
+            FROM read_parquet('{PARQUET_URL}')
             WHERE TEAM_ABBREVIATION = '{selected_team}'
             GROUP BY SEASON_ID
             ORDER BY SEASON_ID
