@@ -44,37 +44,42 @@ try:
         st.dataframe(player_df)
 
         st.line_chart(player_df.set_index("SEASON_ID")[["PTS", "AST", "REB"]])
-
+    
     with tab2:
-        team_names = con.execute(f"""
-            SELECT DISTINCT TEAM_ABBREVIATION
-            FROM read_parquet('{PARQUET_URL}')
-        """).fetchall()
+    # Fetch and clean team names
+    team_names = con.execute(f"""
+        SELECT DISTINCT TEAM_ABBREVIATION
+        FROM read_parquet('{PARQUET_URL}')
+        WHERE TEAM_ABBREVIATION IS NOT NULL
+        ORDER BY TEAM_ABBREVIATION
+    """).fetchall()
+    team_names = [row[0] for row in team_names]
 
-        team_names = [row[0] for row in team_names]
-        selected_team = ("Select a Team", team_names)
+    # Insert default prompt
+    team_options = ["Select a Team"] + team_names
+    selected_team = st.selectbox("Select a Team", team_options)
 
+    if selected_team != "Select a Team":
         st.subheader("Leading Scorer per Season")
-        top_scorers_df = con.execute(f"""
+        top_scorers_df = con.execute("""
             SELECT SEASON_ID, PLAYER_NAME, MAX(PTS) as Max_PTS
-            FROM read_parquet('{PARQUET_URL}')
+            FROM read_parquet(?)
             WHERE TEAM_ABBREVIATION = ?
             GROUP BY SEASON_ID, PLAYER_NAME
             ORDER BY SEASON_ID
-        """, [selected_team]).df()
-
+        """, [PARQUET_URL, selected_team]).df()
         st.dataframe(top_scorers_df)
 
         st.subheader("Team Totals per Season")
-        team_totals_df = con.execute(f"""
+        team_totals_df = con.execute("""
             SELECT SEASON_ID, SUM(PTS) as Total_PTS, SUM(AST) as Total_AST, SUM(REB) as Total_REB
-            FROM read_parquet('{PARQUET_URL}')
+            FROM read_parquet(?)
             WHERE TEAM_ABBREVIATION = ?
             GROUP BY SEASON_ID
             ORDER BY SEASON_ID
-        """, [selected_team]).df()
-
+        """, [PARQUET_URL, selected_team]).df()
         st.bar_chart(team_totals_df.set_index("SEASON_ID"))
+
 
             
 
