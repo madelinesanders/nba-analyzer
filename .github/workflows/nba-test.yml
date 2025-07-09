@@ -1,5 +1,4 @@
-# .github/workflows/nba-test.yml
-name: Test NBA API
+name: Test NBA API Modified
 
 on:
   workflow_dispatch:
