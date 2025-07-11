@@ -13,7 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/Users/madelinesanders/Projects/nba-analyzer/etl/etl.log'),
+        logging.FileHandler('etl/etl.log'),
         logging.StreamHandler()
     ]
 )
