@@ -3,3 +3,5 @@ boto3
 pandas
 duckdb
 streamlit
+pytest
+plotly
