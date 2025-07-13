@@ -2,14 +2,13 @@
 
 A containerized data pipeline and dashboard for NBA player statistics, built with Apache Airflow, Docker, Python, and Streamlit.
 
----
 
 ## Tech Stack
 
 - Python, pandas, duckdb, nba_api, pytest
 - Apache Airflow (workflow orchestration)
 - Docker & Docker Compose
-- Streamlit (dashboard)
+- Streamlit (dashboard deployed on Streamlit Community Cloud)
 - AWS S3 for cloud storage
 
 ---
@@ -52,14 +51,11 @@ streamlit run app.py
 ```
 - Dashboard: [http://localhost:8501](http://localhost:8501)
 
----
-
-## 🧪 Testing
+## Testing
 
 - Data validation tests run automatically as part of the ETL.
 - To run tests manually:
   ```bash
   docker-compose exec airflow pytest /opt/airflow/tests/test_data_validation.py
   ```
-
 ---
