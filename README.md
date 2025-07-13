@@ -2,6 +2,11 @@
 
 A containerized data pipeline and dashboard for NBA player statistics, built with Apache Airflow, Docker, Python, and Streamlit.
 
+Check out the live dashboard here:  
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://nba-analyzer.streamlit.app/)
+
+Or click this link: [https://nba-analyzer.streamlit.app/](https://nba-analyzer.streamlit.app/)
+
 
 ## Tech Stack
 

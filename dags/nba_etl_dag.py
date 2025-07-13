@@ -19,7 +19,7 @@ dag = DAG(
     description='NBA player stats ETL',
     catchup=False,
     tags=['nba', 'etl'],
-    schedule_interval='0 12 * * *'  # Daily at 12 UTC
+    schedule_interval='0 13 * * 1'  # Every Monday at 13 UTC (9 AM EST)
 )
 
 def run_etl():
