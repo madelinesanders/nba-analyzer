@@ -35,7 +35,7 @@ try:
 
         # Query player stats
         player_df = con.execute(f"""
-            SELECT SEASON_ID, TEAM_ID, PTS, AST, REB, GP, PLAYER_NAME
+            SELECT SEASON_ID, TEAM_NAME, PTS, AST, REB, GP
             FROM read_parquet('{PARQUET_URL}')
             WHERE PLAYER_NAME = '{selected_player}' AND TEAM_ID != 0
             ORDER BY SEASON_ID
@@ -82,15 +82,25 @@ try:
 
         selected_team = st.selectbox("Select a Team", team_names)
 
-        st.subheader(f"🏀 Team Totals for {selected_team} - {most_recent_season}")
+        team_players_df = con.execute(f"""
+            SELECT PLAYER_NAME, PTS, AST, REB, GP
+            FROM read_parquet('{PARQUET_URL}')
+            WHERE TEAM_ABBREVIATION = '{selected_team}' AND SEASON_ID = '{most_recent_season}'
+            ORDER BY PTS DESC
+        """).df()
+        st.subheader(f"Players for {selected_team} - {most_recent_season}")
+        st.dataframe(team_players_df)
+
         team_totals_df = con.execute(f"""
             SELECT 
                 SUM(PTS) AS Total_PTS, 
                 SUM(AST) AS Total_AST, 
-                SUM(REB) AS Total_REB
+                SUM(REB) AS Total_REB,
+                SUM(GP) AS Total_GP
             FROM read_parquet('{PARQUET_URL}')
             WHERE TEAM_ABBREVIATION = '{selected_team}' AND SEASON_ID = '{most_recent_season}'
         """).df()
+        st.subheader(f"Team Totals for {selected_team} - {most_recent_season}")
         st.dataframe(team_totals_df)
 
         st.subheader(f"⭐ Stat Leaders for {selected_team} - {most_recent_season}")
