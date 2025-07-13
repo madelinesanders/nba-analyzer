@@ -1,31 +1,20 @@
-# 🏀 NBA Analyzer
+# NBA API Data Pipeline
 
-A containerized data pipeline and interactive dashboard for NBA player statistics analysis, built with **Apache Airflow**, **Docker**, **Python**, and **Streamlit**.
-
----
-
-## 🚀 Features
-
-- **Automated ETL pipeline**: Collects, processes, and validates NBA player stats from the NBA API.
-- **Data storage**: Saves data in DuckDB, Parquet, and CSV formats.
-- **Validation**: Runs automated tests on every ETL run.
-- **Containerized**: Easy to run anywhere with Docker Compose.
-- **Interactive dashboard**: Explore player and team stats with Streamlit.
-- **Extensible**: Ready for S3 upload, more advanced analytics, and custom dashboards.
+A containerized data pipeline and dashboard for NBA player statistics, built with Apache Airflow, Docker, Python, and Streamlit.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - Python, pandas, duckdb, nba_api, pytest
 - Apache Airflow (workflow orchestration)
 - Docker & Docker Compose
 - Streamlit (dashboard)
-- (Optional) AWS S3 for cloud storage
+- AWS S3 for cloud storage
 
 ---
 
-## ⚡ Quickstart
+## Getting Started
 
 ### 1. **Clone the repo**
 ```bash
@@ -74,29 +63,3 @@ streamlit run app.py
   ```
 
 ---
-
-## 📁 Project Structure
-
-```
-nba-analyzer/
-├── dags/                # Airflow DAGs
-├── etl/                 # ETL scripts
-├── tests/               # Data validation tests
-├── streamlit_app/       # Streamlit dashboard
-├── docker-compose.yaml  # Docker Compose config
-├── requirements.txt     # Python dependencies
-├── .env.example         # Example environment variables
-└── README.md
-```
-
----
-
-## 🔒 Security & Best Practices
-
-- **Never commit your real `.env` file or secrets.**
-- Data files (`.csv`, `.parquet`, `.duckdb`) are gitignored and not tracked.
-- For production, use strong passwords and secure your AWS credentials.
-
----
-
-## 🙋‍♀️ About
