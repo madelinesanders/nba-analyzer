@@ -1,6 +1,7 @@
 import streamlit as st
 import duckdb
 import os
+import plotly.express as px
 
 # Config
 PARQUET_URL = "s3://nba-analyzer-data-madeline/nba-data/latest/stats_df.parquet"
@@ -36,14 +37,33 @@ try:
         player_df = con.execute(f"""
             SELECT SEASON_ID, TEAM_ID, PTS, AST, REB, GP, PLAYER_NAME
             FROM read_parquet('{PARQUET_URL}')
-            WHERE PLAYER_NAME = '{selected_player}'
+            WHERE PLAYER_NAME = '{selected_player}' AND TEAM_ID != 0
             ORDER BY SEASON_ID
         """).df()
 
         st.subheader(f"{selected_player}'s Season Stats")
         st.dataframe(player_df)
 
-        st.line_chart(player_df.set_index("SEASON_ID")[["PTS", "AST", "REB"]])
+        if not player_df.empty:
+            fig = px.line(
+                player_df,
+                x="SEASON_ID",
+                y=["PTS", "AST", "REB"],
+                markers=True,
+                labels={"value": "Stat Value", "SEASON_ID": "Season", "variable": "Stat"},
+                title=f"{selected_player}'s Season Stats (by Team)",
+            )
+            fig.update_layout(
+                xaxis_title="Season",
+                yaxis_title="Stat Value",
+                legend_title="Stat",
+                template="plotly_dark",
+                hovermode="x unified"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No stats available for this player with a valid team.")
+
     
     with tab2:
         # Get the most recent season_id

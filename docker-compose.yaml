@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5444:5432"
+
+  airflow:
+    image: apache/airflow:2.9.1-python3.10
+    command: >
+      bash -c "/opt/airflow/create_admin_user.sh && airflow webserver"
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    volumes:
+      - ./:/opt/airflow
+    ports:
+      - "8080:8080"
+
+  scheduler:
+    image: apache/airflow:2.9.1-python3.10
+    command: scheduler
+    restart: always
+    depends_on:
+      - airflow
+    env_file:
+      - .env
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./etl:/opt/airflow/etl
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./requirements.txt:/requirements.txt
+      - ./tests:/opt/airflow/tests
+    entrypoint: >
+      bash -c "
+      pip install --no-cache-dir -r /requirements.txt &&
+      airflow db upgrade &&
+      exec airflow scheduler
+      "
+
+volumes:
+  postgres-db-volume:
