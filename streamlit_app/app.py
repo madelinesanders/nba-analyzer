@@ -35,7 +35,7 @@ try:
 
         # Query player stats
         player_df = con.execute(f"""
-            SELECT SEASON_ID, TEAM_NAME, PTS, AST, REB, GP
+            SELECT SEASON_ID, TEAM_ABBREVIATION, PTS, AST, REB, GP
             FROM read_parquet('{PARQUET_URL}')
             WHERE PLAYER_NAME = '{selected_player}' AND TEAM_ID != 0
             ORDER BY SEASON_ID
