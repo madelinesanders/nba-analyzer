@@ -4,3 +4,4 @@ pandas
 duckdb
 streamlit
 pytest
+plotly
